@@ -1,0 +1,26 @@
+{
+  "name": "api-rest",
+  "version": "1.0.0",
+  "description": "Proyecto de API-RESTful con Node.js y Express para SD",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gat7ua/api-rest.git"
+  },
+  "keywords": [
+    "CRUD",
+    "REST",
+    "mongo",
+    "node",
+    "express"
+  ],
+  "author": "Guillermo Antequera",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gat7ua/api-rest/issues"
+  },
+  "homepage": "https://github.com/gat7ua/api-rest#readme"
+}
