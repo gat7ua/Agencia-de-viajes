@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/gat7ua/api-rest/issues"
   },
-  "homepage": "https://github.com/gat7ua/api-rest#readme"
+  "homepage": "https://github.com/gat7ua/api-rest#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
