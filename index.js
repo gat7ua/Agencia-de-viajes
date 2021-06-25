@@ -1,17 +1,42 @@
 'use strict'
 
-var puerto = 8080
+const port = process.env.port || 8080;
 
 const express = require('express');
+const logger = require('morgan');
+
 const app = express();
 
-app.get('/hola', (request, response) => {
-    response.send('Tu puta madre\n');
+app.use(logger('dev'));
+app.use(express.urlencoded({extended : 'false'}));
+app.use(express.json());
+
+app.get('/api/products', (request, response) => {
+    response.send({products : []});
 })
 
-app.listen(puerto, () => {
-    console.log('API REST en http://localhost:' + puerto + '/hola');
+app.get('/api/products/:id', (request, response) => {
+    response.send({products : `${request.params.id}`});
+})
+
+app.post('/api/products', (request, response) => {
+    console.log(request.body)
+    response.send({products : `Product received`});
+})
+
+app.put('/api/products/:id', (request, response) => {
+    response.send({products : `${request.params.id}`});
+})
+
+app.delete('/api/products/:id', (request, response) => {
+    response.send({products : `${request.params.id}`});
+})
+
+app.listen(port, () => {
+    console.log('API REST en http://localhost:' + port + '/api/products');
 });
+
+
 
 /*
 var http = require('http');
