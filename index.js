@@ -1,42 +1,111 @@
 'use strict'
 
-const port = process.env.port || 8080;
+const port = process.env.PORT || 1080   
 
 const express = require('express');
 const logger = require('morgan');
+const mongojs = require('mongojs');
+const cors = require('cors');
 
 const app = express();
 
+var db = mongojs("SD");
+var id = mongojs.ObjectID;
+
+var allowCrossTokenHeader = (req, res, next) => {
+    res.header("Access-Control-Allow-Headers", "*");
+    return next();
+};
+    
+var allowCrossTokenOrigin = (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    return next();
+};
+
+var auth = (req, res, next) => {
+    if(req.headers.token === "quebuena.es") {
+        return next();
+    } 
+    else {
+        return next(new Error("No autorizado"));
+    };
+};
+
+// middlewares
 app.use(logger('dev'));
-app.use(express.urlencoded({extended : 'false'}));
+app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use(cors());
+app.use(allowCrossTokenHeader);
+app.use(allowCrossTokenOrigin);
 
-app.get('/api/products', (request, response) => {
-    response.send({products : []});
-})
-
-app.get('/api/products/:id', (request, response) => {
-    response.send({products : `${request.params.id}`});
-})
-
-app.post('/api/products', (request, response) => {
-    console.log(request.body)
-    response.send({products : `Product received`});
-})
-
-app.put('/api/products/:id', (request, response) => {
-    response.send({products : `${request.params.id}`});
-})
-
-app.delete('/api/products/:id', (request, response) => {
-    response.send({products : `${request.params.id}`});
-})
-
-app.listen(port, () => {
-    console.log('API REST en http://localhost:' + port + '/api/products');
+app.param("coleccion", (req, res, next, coleccion) => {
+    console.log('param /api/:coleccion');
+    console.log('colección: ', coleccion);
+    req.collection = db.collection(coleccion);
+    return next();
 });
 
+app.get('/api', (req, res, next) => {
+    console.log('GET /api');
+    console.log(req.params);
+    console.log(req.collection);
+    db.getCollectionNames((err, colecciones) => {
+    if (err) return next(err);
+        res.json(colecciones);
+    });
+});
 
+app.get('/api/:coleccion', (req, res, next) => {
+    req.collection.find((err, coleccion) => {
+        if (err) return next(err);
+        res.json(coleccion);
+    });
+});
+
+app.get('/api/:coleccion/:id', (req, res, next) => {
+    req.collection.findOne({_id: id(req.params.id)}, (err, elemento) => {
+        if (err) return next(err);
+        res.json(elemento);
+    });
+});
+
+app.post('/api/:coleccion', auth, (req, res, next) => {
+    const elemento = req.body;
+    if (!elemento.nombre) {
+        res.status(400).json ({
+            error: 'Bad data',
+            description: 'Se precisa al menos un campo <nombre>'
+        });
+    } 
+    else {
+        req.collection.save(elemento, (err, coleccionGuardada) => {
+            if(err) return next(err);
+            res.json(coleccionGuardada);
+        });
+    }
+});
+
+app.put('/api/:coleccion/:id', auth, (req, res, next) => {
+    let elementoId = req.params.id;
+    let elementoNuevo = req.body;
+    req.collection.update({_id: id(elementoId)}, {$set: elementoNuevo}, {safe: true, multi: false}, (err, elementoModif) => {
+        if (err) return next(err);
+        res.json(elementoModif);
+    });
+});
+
+app.delete('/api/:coleccion/:id', auth, (req, res, next) => {
+    let elementoId = req.params.id;
+    req.collection.remove({_id: id(elementoId)}, (err, resultado) => {
+        if (err) return next(err);
+        res.json(resultado);
+    });
+});
+   
+app.listen(port, () => {
+    console.log(`API REST ejecutándose en http://localhost:${port}/api/:coleccion/:id`);
+});
 
 /*
 var http = require('http');
