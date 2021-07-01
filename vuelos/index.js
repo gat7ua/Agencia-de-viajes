@@ -94,7 +94,7 @@ app.get('/api/:coleccion', (req, res, next) => {
 
 app.get('/api/:coleccion/:id', (req, res, next) => {
     const queColeccion = req.params.coleccion;
-    const queId = rew.params.id;
+    const queId = req.params.id;
     req.collection.findOne({_id: id(queId)}, (err, elemento) => {
         if (err) return next(err);
         console.log(elemento);
