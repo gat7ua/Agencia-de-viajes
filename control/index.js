@@ -14,11 +14,24 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jwt-simple');
 const tkService = require('./tokens');
+const cors = require('cors');
 
 const OPTIONS_HTTPS = {
     key: fs.readFileSync('./cert/key.pem'),
     cert: fs.readFileSync('./cert/cert.pem')
 };
+
+var allowCrossTokenHeader = (req, res, next) => {
+    res.header("Acces-Control-Allow-Headers", "*");
+    return next();
+};
+
+var allowCrossTokenOrigin = (req, res, next) => {
+    res.header("Acces-Control-Allow-Origin", "*");
+    return next();
+};
+
+
 
 const app = express();
 
@@ -29,6 +42,7 @@ var id = mongojs.ObjectID;
 app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cors());
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -151,7 +165,7 @@ function verPassword(hash, req, res, next) {
                 console.log(`Usuario con ID: ${userId} autenticado y autorizado correctamente`);
             }).catch(err => res.json(`Token caducado`));
             var collection = db.collection("agencias");
-            collection.update({ _id: id(req.params.id) }, { $set: { token: token } }, function (err, elementoGuardado) {
+            collection.update({ "user": req.params.id }, { $set: { token: token } }, function (err, elementoGuardado) {
                 if (err || !elementoGuardado) res.json("user not updated");
                 else res.json("user updated");
             });
@@ -174,12 +188,12 @@ app.post('/api/registrar', (req, res, next) => {
 
 });
 
-app.get('/api/identificar/:id', (req, res, next) => {
+app.post('/api/identificar/:id', (req, res, next) => {
     const queID = req.params.id;
     var hash = ``;
     var collection = db.collection("agencias");
-    collection.findOne({ _id: id(queID) }, (err, elemento) => {
-        if (err) res.json(`Id: ${queID}, no válida`);
+    collection.findOne({"user": queID }, (err, elemento) => {
+        if (err) res.json(`Usuario: ${queID}, no válido`);
         console.log(elemento);
         hash = elemento.password;
         verPassword(hash, req, res, next);
@@ -324,10 +338,10 @@ app.post('/api/:proveedores/:colecciones/:id/:idProv', auth, (req, res, next) =>
             newURL = `${WS_VUELO}` + `/vuelosDisponibles` + `/${req.params.idProv}/`;
             break;
         case "coche":
-            newURL = `${WS_VEHICULO}` + `/coches` + `/${req.params.idProv}/`;;
+            newURL = `${WS_VEHICULO}` + `/cochesDisponibles` + `/${req.params.idProv}/`;;
             break;
         case "hotel":
-            newURL = `${WS_HOTEL}` + `/hoteles` + `/${req.params.idProv}/`;;
+            newURL = `${WS_HOTEL}` + `/habitacionesDisponibles` + `/${req.params.idProv}/`;;
             break;
         default:
             res.json(`End-Point invalido: ${req.params.proveedores} no existe`);

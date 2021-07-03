@@ -1,0 +1,26 @@
+<div class="row">
+    <div class="col-md-4 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                Inicio de sesión
+            </div>
+            <div class="card-body">
+                <form (submit)="signIn()">
+                    <div class="form-group">
+                        <input type="text" [(ngModel)]="user.user" name="usuario" class="form-control" placeholder="Usuario" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" [(ngModel)]="user.password" name="contraseña" class="form-control" placeholder="Contraseña" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Enviar
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="container">
+            ¿No tiene usuario? Registrese <a href="signup">aquí</a>
+        </div>
+    </div>
+</div>

@@ -24,6 +24,7 @@
   "homepage": "https://bitbucket.org/est20/api-rest#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "jwt-simple": "^0.5.6",
     "moment": "^2.29.1",

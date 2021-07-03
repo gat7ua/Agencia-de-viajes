@@ -1,0 +1,24 @@
+<table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Marca</th>
+        <th scope="col">Modelo</th>
+        <th scope="col">Potencia</th>
+        <th scope="col">Asientos</th>
+        <th scope="col">Disponibilidad</th>
+        <th scope="col">Máximo</th>
+        <th scope="col">Precio</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let coche of coches">
+        <th scope="col">{{coche.marca}}</th>
+        <th scope="col">{{coche.modelo}}</th>
+        <th scope="col">{{coche.potencia}}</th>
+        <th scope="col">{{coche.asientos}}</th>
+        <th scope="col">{{coche.disponibilidad}}</th>
+        <th scope="col">{{coche.maximo}}</th>
+        <th scope="col">{{coche.precio}}</th>
+      </tr>
+    </tbody>
+  </table>
