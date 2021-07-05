@@ -27,7 +27,15 @@ export class AuthService {
   }
   
   getToken(){
-    return localStorage.getItem('token');
+    return 'buenaonda';
+  }
+
+  getUser(){
+    return localStorage.getItem('user');
+  }
+
+  reservar(item: any) {
+    return this.http.post<any>(this.URL + `/${item.prov}/reserva/${this.getUser()}/${item.id}`, item);
   }
 
   logOut(){

@@ -84,17 +84,32 @@ app.get('/api/:coleccion', (req, res, next) => {
     req.collection.find((err, elems) => {
         if (err) return next(err);
         console.log(elems);
-        res.json({
-            result: 'OK',
-            coleccion: queColeccion,
-            elementos: elems
+        var reser = db.collection("reserva");
+        reser.find((err, reserv) => {
+            var borr = [];
+            for (let el of elems) {
+                for (let r of reserv) {
+                    if (el._id == r.proveedor) {
+                        borr.push(elems.indexOf(el));
+                        break;
+                    }
+                }
+            }
+            for (let num in borr) {
+                elems.splice(num, 1);
+            }
+            res.json({
+                result: 'OK',
+                coleccion: queColeccion,
+                elementos: elems
+            });
         });
     });
 });
 
 app.get('/api/:coleccion/:id', (req, res, next) => {
     const queColeccion = req.params.coleccion;
-    const queId = rew.params.id;
+    const queId = req.params.id;
     req.collection.findOne({_id: id(queId)}, (err, elemento) => {
         if (err) return next(err);
         console.log(elemento);
@@ -144,13 +159,13 @@ app.put('/api/:coleccion/:id', auth, (req, res, next) => {
 });
 
 app.delete('/api/:coleccion/:id', auth, (req, res, next) => {
-    const queColeccion = request.params.coleccion;
-    const queId = request.params.id;
-    request.collection.remove(
+    const queColeccion = req.params.coleccion;
+    const queId = req.params.id;
+    req.collection.remove(
         {_id: id(queId)},
         (err,resultado)=>{
             if (err) return next(err);
-            response.json(resultado);
+            res.json(resultado);
         }
     );
 });

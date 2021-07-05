@@ -1,13 +1,13 @@
 'use strict'
 
-const port = process.env.PORT || 1070   
+const port = process.env.PORT || 1070
 
 const https = require('https');
 const fs = require('fs');
 
 const OPTIONS_HTTPS = {
-    key : fs.readFileSync('./cert/key.pem'),
-    cert : fs.readFileSync('./cert/cert.pem')
+    key: fs.readFileSync('./cert/key.pem'),
+    cert: fs.readFileSync('./cert/cert.pem')
 }
 
 const express = require('express');
@@ -25,14 +25,14 @@ var allowCrossTokenHeader = (req, res, next) => {
     res.header("Access-Control-Allow-Headers", "*");
     return next();
 };
-    
+
 var allowCrossTokenOrigin = (req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     return next();
 };
 
-function auth(request,response,next){
-    if(!request.headers.authorization){
+function auth(request, response, next) {
+    if (!request.headers.authorization) {
         response.status(401).json({
             result: 'KO',
             mensaje: "No se ha enviado el token tipo Bearer en la cabecera Authorization"
@@ -41,7 +41,7 @@ function auth(request,response,next){
     }
 
     console.log(request.headers.authorization);
-    if(request.headers.authorization.split(" ")[1] === "buenaonda"){
+    if (request.headers.authorization.split(" ")[1] === "buenaonda") {
         return next();
     }
 
@@ -54,7 +54,7 @@ function auth(request,response,next){
 
 // middlewares
 app.use(logger('dev'));
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
 app.use(allowCrossTokenHeader);
@@ -84,10 +84,27 @@ app.get('/api/:coleccion', (req, res, next) => {
     req.collection.find((err, elems) => {
         if (err) return next(err);
         console.log(elems);
-        res.json({
-            result: 'OK',
-            coleccion: queColeccion,
-            elementos: elems
+        var reser = db.collection("reserva");
+        reser.find((err, reserv) => {
+            var borr = [];
+            for (let el of elems) {
+                for (let r of reserv) {
+                    if (el._id == r.proveedor) {
+                        borr.push(elems.indexOf(el));
+                        break;
+                    }
+                }
+            }
+            var cont = 0;
+            for (let num in borr) {
+                elems.splice(num - cont, 1);
+                cont++;
+            }
+            res.json({
+                result: 'OK',
+                coleccion: queColeccion,
+                elementos: elems
+            });
         });
     });
 });
@@ -95,7 +112,7 @@ app.get('/api/:coleccion', (req, res, next) => {
 app.get('/api/:coleccion/:id', (req, res, next) => {
     const queColeccion = req.params.coleccion;
     const queId = req.params.id;
-    req.collection.findOne({_id: id(queId)}, (err, elemento) => {
+    req.collection.findOne({ _id: id(queId) }, (err, elemento) => {
         if (err) return next(err);
         console.log(elemento);
         res.json({
@@ -109,9 +126,9 @@ app.get('/api/:coleccion/:id', (req, res, next) => {
 app.post('/api/:coleccion', auth, (req, res, next) => {
     const nElemento = req.body;
     const queColeccion = req.params.coleccion;
-    
+
     req.collection.save(nElemento, (err, coleccionGuardada) => {
-        if(err) return next(err);
+        if (err) return next(err);
         console.log(coleccionGuardada);
         res.status(201).json({
             result: 'OK',
@@ -126,15 +143,15 @@ app.put('/api/:coleccion/:id', auth, (req, res, next) => {
     const nuevosDatos = req.body;
     const queId = req.params.id;
     req.collection.update(
-        { _id: id(queId)},
-        { $set: nuevosDatos},
-        { safe: true,multi: false},
-        (err, resultado)=>{
+        { _id: id(queId) },
+        { $set: nuevosDatos },
+        { safe: true, multi: false },
+        (err, resultado) => {
             if (err) return next(err);
 
             console.log(resultado);
             res.json({
-                result:'OK',
+                result: 'OK',
                 coleccion: queColeccion,
                 resultado: resultado
 
@@ -146,15 +163,15 @@ app.put('/api/:coleccion/:id', auth, (req, res, next) => {
 app.delete('/api/:coleccion/:id', auth, (req, res, next) => {
     const queColeccion = req.params.coleccion;
     const queId = req.params.id;
-    ret.collection.remove(
-        {_id: id(queId)},
-        (err,resultado)=>{
+    req.collection.remove(
+        { _id: id(queId) },
+        (err, resultado) => {
             if (err) return next(err);
             res.json(resultado);
         }
     );
 });
-   
+
 https.createServer(OPTIONS_HTTPS, app).listen(port, () => {
     console.log('Secure WS API REST CRUD con DB para vuelos ejecutandose en https://localhost:' + port + '/api/:coleccion/:id');
 });

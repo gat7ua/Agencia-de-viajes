@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ export class TasksService {
   miPuerto = "2000";
   private URL = `https://${this.miIp}:${this.miPuerto}/api`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   getVuelos() {
     return this.http.get<any>(this.URL + '/vuelo/vuelosDisponibles');
@@ -25,6 +26,14 @@ export class TasksService {
   }
 
   getReservas() {
+    return this.http.get<any>(this.URL + `/reserva/${this.authService.getUser()}`);
+  }
 
+  postReserva(item: any) {
+    return this.http.post<any>(this.URL + `/${item.prov}/reserva/`, item);
+  }
+
+  deleteReserva(item: any) {
+    return this.http.delete<any>(this.URL + `/${item.prov}/reserva/${this.authService.getUser()}/${item.id}`);
   }
 }

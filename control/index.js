@@ -31,8 +31,6 @@ var allowCrossTokenOrigin = (req, res, next) => {
     return next();
 };
 
-
-
 const app = express();
 
 var db = mongojs("mongodb+srv://guillermo:1123581321@mycluster.bscyw.mongodb.net/agencia?retryWrites=true&w=majority");
@@ -43,6 +41,8 @@ app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
+app.use(allowCrossTokenHeader);
+app.use(allowCrossTokenOrigin);
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -62,7 +62,7 @@ function auth(req, res, next) {
     }
     var collection = db.collection("agencias");
     try {
-        collection.findOne({ _id: id(req.params.id) }, (err, elemento) => {
+        collection.findOne({ user: req.params.id }, (err, elemento) => {
             if (err) res.json(`Id: ${req.params.id}, no valida`);
             console.log(elemento);
             tkService.decodificaToken(elemento.token)
@@ -132,6 +132,7 @@ function isProveedor(req, res, next) {
     return queURL;
 }
 
+
 function hashSalt(req, res, next) {
     bcrypt.hash(req.body.password, 10, (err, hash) => {
         if (err) console.log(err);
@@ -167,7 +168,10 @@ function verPassword(hash, req, res, next) {
             var collection = db.collection("agencias");
             collection.update({ "user": req.params.id }, { $set: { token: token } }, function (err, elementoGuardado) {
                 if (err || !elementoGuardado) res.json("user not updated");
-                else res.json("user updated");
+                else res.json({
+                    user: `${req.params.id}`,
+                    token: `${token}`
+                });
             });
         }
         else
@@ -185,14 +189,13 @@ app.post('/api/registrar', (req, res, next) => {
         else
             hashSalt(req, res, next);
     });
-
 });
 
 app.post('/api/identificar/:id', (req, res, next) => {
     const queID = req.params.id;
     var hash = ``;
     var collection = db.collection("agencias");
-    collection.findOne({"user": queID }, (err, elemento) => {
+    collection.findOne({ "user": queID }, (err, elemento) => {
         if (err) res.json(`Usuario: ${queID}, no válido`);
         console.log(elemento);
         hash = elemento.password;
@@ -257,10 +260,14 @@ app.put('/api/banco/:colecciones/:id/:idReserva', auth, (req, res, next) => {
                         }
                     }).then(res => res.json()).then(json => {
                         console.log("Proveedor: Reserva Borrada")
+                    }).catch(function (error) {
+                        console.log(error);
                     });
                     res.json({
                         result: json
                     });
+                }).catch(function (error) {
+                    console.log(error);
                 });
             }
             else {
@@ -282,10 +289,11 @@ app.get('/api', (req, res, next) => {
 });
 
 app.get('/api/reserva/:id', (req, res, next) => {
-    const queID = req.params.id;
+    var queID = req.params.id
     var collection = db.collection("reserva");
-    collection.find({ "idUsuario": queID }, (err, elemento) => {
+    collection.find({ "usuario": queID }, (err, elemento) => {
         if (err) res.json(`Id: ${queID}, no tiene reservas`);
+        console.log(elemento);
         res.json(elemento);
     });
 });
@@ -298,6 +306,8 @@ app.get('/api/:proveedores', (req, res, next) => {
             result: json.result,
             colecciones: json.colecciones
         });
+    }).catch(function (error) {
+        console.log(error);
     });
 });
 
@@ -322,6 +332,8 @@ app.get('/api/:proveedores/:colecciones/:idProveedor', (req, res, next) => {
             colecciones: queColeccion,
             elemento: json.elemento
         });
+    }).catch(function (error) {
+        console.log(error);
     });
 });
 
@@ -330,7 +342,6 @@ app.post('/api/:proveedores/:colecciones/:id/:idProv', auth, (req, res, next) =>
     const queColeccion = req.params.colecciones;
     const queToken = req.params.token;
     var queURL = isProveedor(req, res, next);
-    //const newURL = queURL + `/${idProveedor}`;//para comprobar el proveedor si existe
     console.log(queURL);
     var newURL;
     switch (req.params.proveedores) {
@@ -350,16 +361,16 @@ app.post('/api/:proveedores/:colecciones/:id/:idProv', auth, (req, res, next) =>
         const idUsuario = req.params.id;
         const idProveedor = req.params.idProv;
         var collection = db.collection("agencias");
-        collection.findOne({ _id: id(idUsuario) }, (err, elemento) => {
+        collection.findOne({ user: idUsuario }, (err, elemento) => {
             if (elemento == null)
                 res.json(`Error: id de Usuario no existe`);
             else {
-                //const newURL = queURL + `/${idProveedor}`;//para comprobar el proveedor si existe
                 fetch(newURL).then(res => res.json()).then(json => {
                     console.log(json);
                     const nuevoElemento = {
-                        idProveedor: req.params.idProv,
-                        idUsuario: req.params.id,
+                        producto: req.params.idProv,
+                        proveedor: req.params.proveedores,
+                        usuario: req.params.id,
                         precio: json.elemento.precio
                     };
                     fetch(queURL, {
@@ -381,7 +392,8 @@ app.post('/api/:proveedores/:colecciones/:id/:idProv', auth, (req, res, next) =>
                         var collection = db.collection("reserva");
                         collection.save({
                             _id: id(json.elemento._id),
-                            idUsuario: req.params.id,
+                            usuario: req.params.id,
+                            producto: req.params.idProv,
                             proveedor: req.params.proveedores,
                             precio: json.elemento.precio
                         }, (err, elementoGuardado) => {
@@ -393,6 +405,8 @@ app.post('/api/:proveedores/:colecciones/:id/:idProv', auth, (req, res, next) =>
                             });
                         });
                     });
+                }).catch(function(error) {
+                    console.log(error);
                 });
             }
         });
@@ -420,6 +434,8 @@ app.post('/api/:proveedores/:colecciones/:id', auth, (req, res, next) => {
             colecciones: queColeccion,
             elemento: json.elemento
         });
+    }).catch(function(error) {
+        console.log(error);
     });
 });
 
@@ -442,27 +458,14 @@ app.put('/api/:proveedores/:colecciones/:id/:idProveedor', auth, (req, res, next
             colecciones: queColeccion,
             elemento: json.elemento
         });
+    }).catch(function(error) {
+        console.log(error);
     });
-    /*req.collection.update(
-        { _id: id(queId)},
-        { $set: nuevosDatos},
-        { safe: true,multi: false},
-        (err, resultado)=>{
-            if (err) return next(err);
-
-            console.log(resultado);
-            res.json({
-                result:'OK',
-                coleccion: queColeccion,
-                resultado: resultado
-
-            });
-        }
-    );*/
 });
 
 app.delete('/api/:proveedores/:colecciones/:id/:idProveedor', auth, (req, res, next) => {
     const queId = req.params.id;
+    const reser = req.params.idProveedor;
     const queToken = req.params.token;
     const queColeccion = req.params.colecciones;
     var queURL = isProveedor(req, res, next);
@@ -478,7 +481,16 @@ app.delete('/api/:proveedores/:colecciones/:id/:idProveedor', auth, (req, res, n
             colecciones: queColeccion,
             elemento: json.elemento
         });
+    }).catch(function(error) {
+        console.log(error);
     });
+    if (queColeccion == "reserva") {
+        db.collection("reserva").remove(
+            { _id: id(reser) },
+            (err, resultado) => {
+                if (err) return next(err);
+        })
+    }
 });
 
 https.createServer(OPTIONS_HTTPS, app).listen(port, () => {

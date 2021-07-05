@@ -1,4 +1,11 @@
-<table class="table table-hover">
+<div class="container">
+  <h1>Servicios ofertados</h1>
+</div>
+<br>
+<br>
+<div class="container">
+  <h2>Coches de alquiler</h2>
+  <table class="table table-hover">
     <thead>
       <tr>
         <th scope="col">Marca</th>
@@ -8,6 +15,7 @@
         <th scope="col">Disponibilidad</th>
         <th scope="col">Máximo</th>
         <th scope="col">Precio</th>
+        <th scope="col" *ngIf="authService.loggedIn()">Reservar</th>
       </tr>
     </thead>
     <tbody>
@@ -19,6 +27,88 @@
         <th scope="col">{{coche.disponibilidad}}</th>
         <th scope="col">{{coche.maximo}}</th>
         <th scope="col">{{coche.precio}}</th>
+        <th scope="col" *ngIf="authService.loggedIn()">
+          <form (submit)="reserva()">
+            <button class="btn btn-primary" (click)="item.prov = 'coche'; item.id = coche._id;">
+              Reserva
+            </button>
+          </form>
+        </th>
       </tr>
     </tbody>
   </table>
+</div>
+<br>
+<br>
+<div class="container">
+  <h2>Vuelos</h2>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Destino</th>
+        <th scope="col">Origen</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Clase</th>
+        <th scope="col">Fecha</th>
+        <th scope="col">Hora</th>
+        <th scope="col">Equipaje</th>
+        <th scope="col">Precio</th>
+        <th scope="col" *ngIf="authService.loggedIn()">Reservar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let vuelo of vuelos">
+        <th scope="col">{{vuelo.destino}}</th>
+        <th scope="col">{{vuelo.origen}}</th>
+        <th scope="col">{{vuelo.tipo}}</th>
+        <th scope="col">{{vuelo.clase}}</th>
+        <th scope="col">{{vuelo.fecha}}</th>
+        <th scope="col">{{vuelo.hora}}</th>
+        <th scope="col">{{vuelo.equipaje}}</th>
+        <th scope="col">{{vuelo.precio}}</th>
+        <th scope="col" *ngIf="authService.loggedIn()">
+          <form (submit)="reserva()">
+            <button class="btn btn-primary" (click)="item.prov = 'vuelo'; item.id = vuelo._id;">
+              Reserva
+            </button>
+          </form>
+        </th>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<br>
+<br>
+<div class="container">
+  <h2>Habitaciones y hoteles</h2>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Ciudad</th>
+        <th scope="col">Dirección</th>
+        <th scope="col">Habitaciones indiv</th>
+        <th scope="col">Habitaciones doble</th>
+        <th scope="col">Descripción</th>
+        <th scope="col">Precio</th>
+        <th scope="col" *ngIf="authService.loggedIn()">Reservar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let hab of habitaciones">
+        <th scope="col">{{hab.ciudad}}</th>
+        <th scope="col">{{hab.direccion}}</th>
+        <th scope="col">{{hab.habitacionesInd}}</th>
+        <th scope="col">{{hab.habitacionesDob}}</th>
+        <th scope="col">{{hab.descripcion}}</th>
+        <th scope="col">{{hab.precio}}</th>
+        <th scope="col" *ngIf="authService.loggedIn()">
+          <form (submit)="reserva()">
+            <button class="btn btn-primary" (click)="item.prov = 'hotel'; item.id = hab._id;">
+              Reserva
+            </button>
+          </form>
+        </th>
+      </tr>
+    </tbody>
+  </table>
+</div>

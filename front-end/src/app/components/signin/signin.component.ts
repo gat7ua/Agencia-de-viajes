@@ -24,6 +24,7 @@ export class SigninComponent implements OnInit {
       res => {
         console.log(res)
         localStorage.setItem('token', res.token);
+        localStorage.setItem('user', this.user.user);
         this.router.navigate(['/privatet'])
       },
       err => console.log(err)
