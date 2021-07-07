@@ -7,17 +7,6 @@ const SECRET = "esunsecreto";
 const EXP_TIME = 7*24*60; 
 
 //crearToken
-//Devuelve token tipo JWT
-//Formato JWT:
-//      HEADER.PAYLOAD.VERIFY_SIGNATURE
-//
-//Donde:
-//      HEADER (Objeto JSON con el algoritmo codificado en base URL)
-//          {
-//                  alg:...
-//...
-//      VERIFY_SIGNATURE = HMACSHA256(base64UrlEncode(HEAD)+"."+base64UrlEncode(PAYLOAD),SECRETO)
-
 function creaToken(user){
     const payload ={
         sub: user,
@@ -28,9 +17,6 @@ function creaToken(user){
 }
 
 //decodificaToken
-//
-//devuelve el identificador del usuario
-//
 function decodificaToken(token){
     return new Promise((resolve,reject)=>{
         try{
