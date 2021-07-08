@@ -13,6 +13,7 @@ const https = require('https');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jwt-simple');
+const helmet = require('helmet');
 const tkService = require('./tokens');
 const cors = require('cors');
 
@@ -40,6 +41,7 @@ var id = mongojs.ObjectID;
 app.use(logger('dev'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(helmet());
 app.use(cors());
 app.use(allowCrossTokenHeader);
 app.use(allowCrossTokenOrigin);
