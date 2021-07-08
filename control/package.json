@@ -19,9 +19,8 @@
     "express",
     "mongo"
   ],
-  "author": "Eric Sanchez Tamayo",
+  "author": "Guillermo Antequera Tejado",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/est20/api-rest#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
