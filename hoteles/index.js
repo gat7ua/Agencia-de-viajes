@@ -89,7 +89,7 @@ app.get('/api/:coleccion', (req, res, next) => {
             var borr = [];
             for (let el of elems) {
                 for (let r of reserv) {
-                    if (el._id == r.proveedor) {
+                    if (el._id == r.producto) {
                         borr.push(elems.indexOf(el));
                         break;
                     }
